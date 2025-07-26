@@ -3,7 +3,7 @@ import sys
 
 
 def main(*args):
-    import scraper
+    import api
 
 
 if __name__ == "__main__":
