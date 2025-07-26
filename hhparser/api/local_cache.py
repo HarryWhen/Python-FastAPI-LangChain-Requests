@@ -1,5 +1,7 @@
-from functools import wraps
+import functools
 from pathlib import Path
+
+from utils import build_file_path, wraps_with_resolver
 
 STORAGE_PATH = Path(__file__).parent / ".cache"
 INDEX_NAME = "index"
@@ -7,22 +9,15 @@ INDEX_NAME = "index"
 
 class Storage:
 
-    @staticmethod
-    def build_slot(request_path, request_query):
-        slot = STORAGE_PATH
-        if request_path:
-            slot /= request_path[1:]
-        return slot / (request_query or INDEX_NAME)
-
     def __init__(self, slot: Path):
         self.slot = slot
 
     @classmethod
-    def get(cls, request_path, request_query):
-        return cls(cls.build_slot(request_path, request_query))
+    def get(cls, request_name, request_query):
+        return cls(STORAGE_PATH / build_file_path(request_name, request_query))
 
     def empty(self):
-        return self.slot.exists()
+        return not self.slot.exists()
 
     @property
     def content(self):
@@ -30,6 +25,7 @@ class Storage:
 
     @content.setter
     def content(self, value):
+        self.slot.parent.mkdir(parents=True, exist_ok=True)
         self.slot.write_text(value)
 
     @content.deleter
@@ -39,11 +35,11 @@ class Storage:
 
 def cache(request):
 
-    @wraps(request)
-    def wrapper(path, query):
-        storage = Storage.get(path, query)
+    @wraps_with_resolver(request)
+    def wrapper(name, query):
+        storage = Storage.get(name, query)
         if storage.empty():
-            storage.content = request(path, query)
+            storage.content = request(name, query)
         return storage.content
 
     return wrapper

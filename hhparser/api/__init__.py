@@ -1,5 +1,5 @@
-from .hh_request import get_data
+from .hh_request import request_data
 
 
-def get_vacancies():
-    raise NotImplementedError
+def get_areas():
+    request_data("areas")
