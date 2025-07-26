@@ -1,6 +1,5 @@
-from pathlib import Path
 from functools import wraps
-
+from pathlib import Path
 
 STORAGE_PATH = Path(__file__).parent / ".cache"
 INDEX_NAME = "index"
@@ -10,7 +9,10 @@ class Storage:
 
     @staticmethod
     def build_slot(request_path, request_query):
-        return STORAGE_PATH / request_path[1:] / (request_query or INDEX_NAME)
+        slot = STORAGE_PATH
+        if request_path:
+            slot /= request_path[1:]
+        return slot / (request_query or INDEX_NAME)
 
     def __init__(self, slot: Path):
         self.slot = slot
