@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 import sys
 
-NAME = "name"
-
 
 def main(*args):
-    import api
+    import hh_api
 
-    vacancies = api.get_vacancies()
+    vacancies = hh_api.get_vacancies()
     print(f"{len(vacancies)} vacancies:")
     for vacancy in vacancies:
-        print(vacancy[NAME])
+        print(vacancy["name"])
 
 
 if __name__ == "__main__":

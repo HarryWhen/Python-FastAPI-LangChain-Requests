@@ -1,6 +1,6 @@
 from functools import partial
 
-from .hh_request import request_vacancies, request_vacancies_statistics
+from .hh_requests import request_vacancies, request_vacancies_statistics
 
 MAX_DEPTH = 2000
 
