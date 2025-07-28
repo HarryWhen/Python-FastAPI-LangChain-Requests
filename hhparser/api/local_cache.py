@@ -1,10 +1,11 @@
-import functools
+from functools import partial
 from pathlib import Path
 
 from utils import build_file_path, wraps_with_resolver
 
 STORAGE_PATH = Path(__file__).parent / ".cache"
 INDEX_NAME = "index"
+build_file_path = partial(build_file_path, index_name=INDEX_NAME)
 
 
 class Storage:

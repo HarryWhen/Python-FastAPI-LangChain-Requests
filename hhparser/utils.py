@@ -20,8 +20,7 @@ def wraps_with_resolver(func):
     return decorator
 
 
-def build_file_path(request_name, request_query):
-    path = request_name or "index"
-    if request_query:
-        path += f"?{urllib.parse.urlencode(request_query)}"
+def build_file_path(request_name, request_query, *, index_name):
+    file_name = urllib.parse.urlencode(request_query) if request_query else index_name
+    path = f"{request_name}/{file_name}" if request_name else file_name
     return pathlib.PurePath(path)
