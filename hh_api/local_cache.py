@@ -1,46 +1,54 @@
-from functools import partial
 from pathlib import Path
+from pickle import dumps, loads
+from typing import Callable, Self
 
-from utils import build_file_path, wraps_with_resolver
+from requests import Response
 
-STORAGE_PATH = Path(__file__).parent / ".cache"
-INDEX_NAME = "index"
-build_file_path = partial(build_file_path, index_name=INDEX_NAME)
+from main import Config
+
+from .request_id import RequestId
+
+STORAGE_PATH: Path = Path(__file__).parent / ".cache"
+INDEX_NAME: str = "index"
+
+
+def build_file_path(request_id: RequestId) -> Path:
+    return STORAGE_PATH / request_id.name / (request_id.query or INDEX_NAME)
 
 
 class Storage:
 
-    def __init__(self, slot: Path):
-        self.slot = slot
+    def __init__(self, cache_file: Path) -> None:
+        self._file: Path = cache_file
 
     @classmethod
-    def get(cls, request_name, request_query):
-        return cls(STORAGE_PATH / build_file_path(request_name, request_query))
+    def get(cls, request_id: RequestId) -> Self:
+        return cls(build_file_path(request_id))
 
-    def empty(self):
-        return not self.slot.exists()
+    def empty(self) -> bool:
+        return not self._file.exists()
 
     @property
-    def content(self):
-        return self.slot.read_text()
+    def response(self) -> Response:
+        return loads(self._file.read_bytes())
 
-    @content.setter
-    def content(self, value):
-        self.slot.parent.mkdir(parents=True, exist_ok=True)
-        self.slot.write_text(value)
+    @response.setter
+    def response(self, value: Response) -> None:
+        self._file.parent.mkdir(parents=True, exist_ok=True)
+        self._file.write_bytes(dumps(value))
+        if Config.DEBUG:
+            self._file.with_suffix(".json").write_text(value.content.decode())
 
-    @content.deleter
-    def content(self):
-        self.slot.unlink()
+    @response.deleter
+    def response(self) -> None:
+        self._file.unlink()
 
 
-def cache(request):
-
-    @wraps_with_resolver(request)
-    def wrapper(name, query):
-        storage = Storage.get(name, query)
-        if storage.empty():
-            storage.content = request(name, query)
-        return storage.content
-
-    return wrapper
+def request_with_cache(
+    request_call: Callable[RequestId, Response],
+    request_id: RequestId,
+) -> Response:
+    storage = Storage.get(request_id)
+    if storage.empty():
+        storage.response = request_call(request_id)
+    return storage.response

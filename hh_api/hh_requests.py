@@ -1,38 +1,24 @@
-import json
-import time
+from functools import partial
+from time import sleep
+from typing import Any, Callable, Optional
 
-import requests
+from requests import Response, get
 
-from .local_cache import cache
-
-URI = "https://api.hh.ru"
-
-
-@cache
-def _request_data(data_name, data_query):
-    url = f"{URI}/{data_name}"
-    time.sleep(1)
-    with requests.get(url, params=data_query) as response:
-        return response.raise_for_status() or response.content.decode()
+from .local_cache import request_with_cache
+from .request_id import RequestId
 
 
-def request_data(data_name="", data_query={}):
-    return json.loads(_request_data(data_name, data_query))
+def _handle_get(request_id: RequestId) -> Response:
+    sleep(1)
+    with get(request_id.url, request_id.params) as response:
+        return response.raise_for_status() or response
 
 
-def _request_vacancies(*, text, experience, excluded_text, **kwargs):
-    query = {
-        "text": text,
-        "experience": experience,
-        "excluded_text": excluded_text,
-        **kwargs,
-    }
-    return request_data("vacancies", query)
-
-
-def request_vacancies(*, page, per_page, text, experience, excluded_text):
-    return _request_vacancies(**locals(), order_by="relevance", no_magic=True)
-
-
-def request_vacancies_statistics(*, text, experience, excluded_text):
-    return _request_vacancies(**locals(), per_page=0, clusters=True)
+def get_request(
+    name: Optional[str] = None,
+    /,
+    *exname: str,
+    **query: Any,
+) -> Response:
+    request_id = RequestId(name or "", *exname, **query)
+    return request_with_cache(_handle_get, request_id)
