@@ -3,6 +3,41 @@ from itertools import chain
 from operator import itemgetter
 from typing import Any
 
+current_vacancy: dict[str, Any] = {}
+
+
+def load_next_vacancy() -> None:
+    pass
+
+
+def get_vacancy_raw_data() -> dict[str, Any]:
+    return current_vacancy
+
+
+def get_employer_raw_data():
+    return get_vacancy_raw_data()["employer"]
+
+
+def get_employer_meta_data() -> str:
+    data = get_employer_raw_data()
+    rep = []
+    rep.append(f'Компания "{data["name"]}".')
+    rep.append(
+        "Имеет подтверждение на сайте."
+        if data["trusted"]
+        else "Не имеет подтверждение на сайте."
+    )
+    rep.append(
+        "Прошла IT аккредитацию."
+        if data["accredited_it_employer"]
+        else "Не прошла IT аккредитацию."
+    )
+    return " ".join(rep)
+
+
+def get_extended_employer_meta_data() -> str:
+    return get_employer_meta_data()
+
 
 class Reliability(StrEnum):
     ESTABLISHED_AND_PURPOSEFUL = auto()
