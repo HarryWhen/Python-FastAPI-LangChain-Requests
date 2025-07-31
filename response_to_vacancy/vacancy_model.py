@@ -14,6 +14,33 @@ def get_vacancy_raw_data() -> dict[str, Any]:
     return current_vacancy
 
 
+def get_vacancy_meta_data() -> str:
+    data = get_vacancy_raw_data()
+    rep = []
+    rep.append(f'Вакансия "{data["name"]}"')
+    rep.append(f"Опубликована {data["published_at"]}.")
+    if data["internship"]:
+        rep.append(f"Формат в виде стажировки.")
+    if sr := data["salary_range"]:
+        sr_cr = sr["currency"]
+        rep.append("Зарплата")
+        if sr_fr := sr["from"]:
+            rep.append(f"от {sr_fr} {sr_cr}")
+        if sr_t := sr["to"]:
+            rep.append(f"до {sr_t} {sr_cr}")
+        rep.append(f"{sr["mode"]["name"].lower()}.")
+    if (
+        (wf := data["work_format"])
+        or (wh := data["working_hours"])
+        or (wsbd := data["work_schedule_by_days"])
+    ):
+        rep.append(
+            f"Возможно работать {", ".join(map(itemgetter("name"), chain(wf, wh, wsbd)))}."
+        )
+    rep.append(f"{data["employment_form"]["name"]} занятость.")
+    return " ".join(rep)
+
+
 def get_employer_raw_data():
     return get_vacancy_raw_data()["employer"]
 
