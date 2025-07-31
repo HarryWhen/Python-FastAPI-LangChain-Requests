@@ -11,7 +11,8 @@ from .request_id import RequestId
 def _handle_get(request_id: RequestId) -> Response:
     sleep(1)
     with get(request_id.url, request_id.params) as response:
-        return response.raise_for_status() or response
+        response.raise_for_status()
+        return response
 
 
 def get_request(

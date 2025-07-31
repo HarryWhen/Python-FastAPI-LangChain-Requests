@@ -45,7 +45,7 @@ class Storage:
 
 
 def request_with_cache(
-    request_call: Callable[RequestId, Response],
+    request_call: Callable[[RequestId], Response],
     request_id: RequestId,
 ) -> Response:
     storage = Storage.get(request_id)
