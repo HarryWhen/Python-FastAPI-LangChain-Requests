@@ -1,9 +1,17 @@
 from enum import StrEnum, auto
 from itertools import chain
+from json import dump, dumps, load
 from operator import itemgetter
+from pathlib import Path
 from typing import Any
 
+from hh_api import get_vacancies
+
+STORAGE_PATH: Path = Path(__file__).parent / ".vacancy"
+
+
 current_vacancy: dict[str, Any] = {}
+current_employer: dict[str, Any] = {}
 
 
 def load_next_vacancy() -> None:
@@ -41,7 +49,7 @@ def get_vacancy_meta_data() -> str:
     return " ".join(rep)
 
 
-def get_employer_raw_data():
+def get_employer_raw_data() -> dict[str, Any]:
     return get_vacancy_raw_data()["employer"]
 
 
@@ -62,8 +70,15 @@ def get_employer_meta_data() -> str:
     return " ".join(rep)
 
 
+def get_extended_employer_raw_data() -> dict[str, Any]:
+    return current_employer
+
+
 def get_extended_employer_meta_data() -> str:
-    return get_employer_meta_data()
+    data = get_extended_employer_raw_data()
+    rep = []
+    rep.append(get_employer_meta_data())
+    return " ".join(rep)
 
 
 class Reliability(StrEnum):
@@ -103,4 +118,17 @@ def report_vacancy(
         advices (list[str]): AI advices to increase chances of getting
             an offer
     """
-    print("YES")
+    print(
+        dumps(
+            {
+                "is_remote": is_remote,
+                "location": location,
+                "reliability": reliability,
+                "skills_match": skills_match,
+                "work_tasks": work_tasks,
+                "chances_of_offer": chances_of_offer,
+                "advices": advices,
+                "vacancy": get_vacancy_raw_data(),
+            }
+        )
+    )
