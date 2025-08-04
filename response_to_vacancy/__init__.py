@@ -1,21 +1,28 @@
-from . import _common, ai_agent
+import dataclasses
+
+from . import ai_agent, simple_chat
 
 
-def get_prompt(*, chat) -> _common.Message:
-    raise NotImplementedError()
+@dataclasses.dataclass
+class Message:
+    text: str
 
 
-def respond_to(msg: _common.Message, *, agent) -> _common.Message:
-    raise NotImplementedError()
+def get_prompt(*, chat: simple_chat.AnyChat) -> Message:
+    return Message(chat.read())
 
 
-def print_msg(msg: _common.Message, *, chat) -> _common.Message:
-    raise NotImplementedError()
+def respond_to(msg: Message, *, agent) -> Message:
+    return Message("Даже я не могу разобрать, что ты хочешь")
+
+
+def print_msg(msg: Message, *, chat: simple_chat.AnyChat) -> None:
+    chat.print(msg.text)
 
 
 def run():
-    chat = get_chat()
-    agent = get_agent()
+    chat = simple_chat.get_chat()
+    agent = ai_agent.get_agent()
 
     while True:
         prompt = get_prompt(chat=chat)

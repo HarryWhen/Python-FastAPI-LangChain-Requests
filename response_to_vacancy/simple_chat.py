@@ -1,11 +1,20 @@
-from ._common import Message
+from typing import Protocol
+
+
+class AnyChat(Protocol):
+    def read(self) -> str: ...
+    def print(self, msg: str) -> None: ...
 
 
 class SimpleChat:
     @staticmethod
-    def read() -> Message:
-        return Message(input(">\t"))
+    def read() -> str:
+        return input("> ")
 
     @staticmethod
-    def print(msg: Message) -> None:
-        print(f"[Bot]\n\t{msg.text}")
+    def print(msg: str) -> None:
+        print(f"[Bot]\n{msg}")
+
+
+def get_chat() -> AnyChat:
+    return SimpleChat
