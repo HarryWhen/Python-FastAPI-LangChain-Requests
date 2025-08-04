@@ -1,22 +1,15 @@
-import dataclasses
-
-from . import ai_agent
+from . import _common, ai_agent
 
 
-@dataclasses.dataclass
-class Message:
-    text: str
-
-
-def get_prompt(*, chat) -> Message:
+def get_prompt(*, chat) -> _common.Message:
     raise NotImplementedError()
 
 
-def respond_to(msg: Message, *, agent) -> Message:
+def respond_to(msg: _common.Message, *, agent) -> _common.Message:
     raise NotImplementedError()
 
 
-def print_msg(msg: Message, *, chat) -> Message:
+def print_msg(msg: _common.Message, *, chat) -> _common.Message:
     raise NotImplementedError()
 
 
