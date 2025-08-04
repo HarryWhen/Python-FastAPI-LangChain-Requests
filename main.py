@@ -13,11 +13,9 @@ def report_vacancies(vacancies):
 
 
 def main(*args):
-    import hh_api
+    import response_to_vacancy
 
-    vacancies = hh_api.get_vacancies()
-    with open(".run_output.txt", "w") as output:
-        output.writelines(map("{}\n".format, report_vacancies(vacancies)))
+    response_to_vacancy.run()
 
 
 if __name__ == "__main__":
