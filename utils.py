@@ -1,7 +1,7 @@
 import functools
 import inspect
 import operator
-from typing import Callable, TypeVar
+from typing import Callable, Optional, TypeVar, Union
 
 from typing_extensions import ParamSpec
 
@@ -12,8 +12,10 @@ R = TypeVar("R")
 
 
 def log(
+    func: Optional[Callable[P, R]] = None,
+    *,
     logger: Callable[[str], None] = print,
-) -> Callable[[Callable[P, R]], Callable[P, R]]:
+) -> Union[Callable[[Callable[P, R]], Callable[P, R]], Callable[P, R]]:
 
     def with_logger(
         func: Callable[P, R],
@@ -28,7 +30,7 @@ def log(
 
         return logged if Config.LOG else func
 
-    return with_logger
+    return with_logger(func) if func else with_logger
 
 
 def wraps_with_resolver(
