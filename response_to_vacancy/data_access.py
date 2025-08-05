@@ -4,17 +4,16 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from hh_api import get_vacancies
-from utils import log
 
 DATA_PATH: Path = Path(__file__).parent / ".used_vacancies.json"
 if not DATA_PATH.exists():
-    DATA_PATH.touch(0x600)
-    DATA_PATH.write_text(dumps(set()))
+    DATA_PATH.touch(0o600)
+    DATA_PATH.write_text(dumps({}))
 
 
-used_vacancies: set[dict[str, Any]] = loads(DATA_PATH.read_bytes())
+used_vacancies: dict[str, str] = loads(DATA_PATH.read_bytes())
 vacancies: Iterator[dict[str, Any]] = filter(
-    lambda v: v not in used_vacancies,
+    lambda v: v["id"] not in used_vacancies,
     get_vacancies(),
 )
 
@@ -22,16 +21,15 @@ current_vacancy: dict[str, Any] = next(vacancies)
 current_employer: dict[str, Any] = {}
 
 
-@log
 def load_new_data() -> None:
     global current_vacancy
-    used_vacancies.add(current_vacancy)
+    used_vacancies[current_vacancy["id"]] = current_vacancy["alternate_url"]
     current_vacancy = next(vacancies)
     DATA_PATH.write_text(dumps(used_vacancies))
 
 
-@log
 def get_vacancy_raw_data() -> dict[str, Any]:
+    """Возвращает актуальные сырые данные для анализа"""
     return current_vacancy
 
 
