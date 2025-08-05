@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 import sys
-from operator import itemgetter
 
 
 class Config:
     DEBUG = True
-
-
-def report_vacancies(vacancies):
-    yield (f"{len(vacancies)} vacancies:")
-    yield from map(itemgetter("name"), vacancies)
+    LOG = True
 
 
 def main(*args):

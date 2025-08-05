@@ -1,11 +1,34 @@
 import functools
 import inspect
+import operator
 from typing import Callable, TypeVar
 
 from typing_extensions import ParamSpec
 
+from main import Config
+
 P = ParamSpec("P")
 R = TypeVar("R")
+
+
+def log(
+    logger: Callable[[str], None] = print,
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
+
+    def with_logger(
+        func: Callable[P, R],
+    ) -> Callable[P, R]:
+
+        @functools.wraps(func)
+        def logged(*args: P.args, **kwargs: P.kwargs) -> R:
+            logger(f"Call {func.__name__} with {args}, {kwargs}")
+            r = func(*args, **kwargs)
+            logger(f"> return of {func.__name__} is {r}")
+            return r
+
+        return logged if Config.LOG else func
+
+    return with_logger
 
 
 def wraps_with_resolver(
@@ -24,3 +47,8 @@ def wraps_with_resolver(
         return wrapper_with_resolver
 
     return decorator
+
+
+def report_vacancies(vacancies):
+    yield (f"{len(vacancies)} vacancies:")
+    yield from map(operator.itemgetter("name"), vacancies)
