@@ -4,27 +4,29 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from hh_api import get_vacancies
+from utils import log
 
-DATA_PATH: Path = Path(__file__).parent / ".past_vacancies.json"
+DATA_PATH: Path = Path(__file__).parent / ".used_vacancies.json"
 
 
-vacancies: Iterator[dict[str, Any]] = get_vacancies()
 with DATA_PATH.open("r") as data:
     used_vacancies: set[dict[str, Any]] = load(data)
+vacancies: Iterator[dict[str, Any]] = filter(
+    lambda v: v not in used_vacancies,
+    get_vacancies(),
+)
 
 current_vacancy: dict[str, Any] = next(vacancies)
 current_employer: dict[str, Any] = {}
 
 
-def update_data(vacancy) -> None:
-    pass
-
-
-def load_next_data() -> None:
-    vacancy = next(vacancies)
-    while current_vacancy in used_vacancies:
-        vacancy = next(vacancies)
-    update_data(vacancy)
+@log
+def load_new_data() -> None:
+    global current_vacancy
+    used_vacancies.add(current_vacancy)
+    current_vacancy = next(vacancies)
+    with DATA_PATH.open("w") as data:
+        dump(used_vacancies, data)
 
 
 def get_vacancy_raw_data() -> dict[str, Any]:
