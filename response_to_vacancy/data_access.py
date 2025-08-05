@@ -1,4 +1,4 @@
-from json import dump, load
+from json import dumps, loads
 from operator import itemgetter
 from pathlib import Path
 from typing import Any, Iterator
@@ -7,10 +7,12 @@ from hh_api import get_vacancies
 from utils import log
 
 DATA_PATH: Path = Path(__file__).parent / ".used_vacancies.json"
+if not DATA_PATH.exists():
+    DATA_PATH.touch(0x600)
+    DATA_PATH.write_text(dumps(set()))
 
 
-with DATA_PATH.open("r") as data:
-    used_vacancies: set[dict[str, Any]] = load(data)
+used_vacancies: set[dict[str, Any]] = loads(DATA_PATH.read_bytes())
 vacancies: Iterator[dict[str, Any]] = filter(
     lambda v: v not in used_vacancies,
     get_vacancies(),
@@ -25,10 +27,10 @@ def load_new_data() -> None:
     global current_vacancy
     used_vacancies.add(current_vacancy)
     current_vacancy = next(vacancies)
-    with DATA_PATH.open("w") as data:
-        dump(used_vacancies, data)
+    DATA_PATH.write_text(dumps(used_vacancies))
 
 
+@log
 def get_vacancy_raw_data() -> dict[str, Any]:
     return current_vacancy
 

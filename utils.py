@@ -1,7 +1,7 @@
 import functools
 import inspect
 import operator
-from typing import Callable, Optional, TypeVar, Union
+from typing import Callable, Optional, TypeVar, overload
 
 from typing_extensions import ParamSpec
 
@@ -11,11 +11,21 @@ P = ParamSpec("P")
 R = TypeVar("R")
 
 
+@overload
+def log(
+    *, logger: Callable[[str], None]
+) -> Callable[[Callable[P, R]], Callable[P, R]]: ...
+
+
+@overload
+def log(func: Callable[P, R]) -> Callable[P, R]: ...
+
+
 def log(
     func: Optional[Callable[P, R]] = None,
     *,
     logger: Callable[[str], None] = print,
-) -> Union[Callable[[Callable[P, R]], Callable[P, R]], Callable[P, R]]:
+) -> Callable[[Callable[P, R]], Callable[P, R]] | Callable[P, R]:
 
     def with_logger(
         func: Callable[P, R],
@@ -23,9 +33,9 @@ def log(
 
         @functools.wraps(func)
         def logged(*args: P.args, **kwargs: P.kwargs) -> R:
-            logger(f"Call {func.__name__} with {args}, {kwargs}")
+            logger(f"> call {func.__name__} with {args}, {kwargs}")
             r = func(*args, **kwargs)
-            logger(f"> return of {func.__name__} is {r}")
+            logger(f"< return of {func.__name__} is {r}")
             return r
 
         return logged if Config.LOG else func
