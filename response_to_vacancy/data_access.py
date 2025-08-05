@@ -1,19 +1,30 @@
 from json import dump, load
 from operator import itemgetter
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from hh_api import get_vacancies
 
-STORAGE_PATH: Path = Path(__file__).parent / ".vacancy"
+DATA_PATH: Path = Path(__file__).parent / ".past_vacancies.json"
 
 
-current_vacancy: dict[str, Any] = {}
+vacancies: Iterator[dict[str, Any]] = get_vacancies()
+with DATA_PATH.open("r") as data:
+    used_vacancies: set[dict[str, Any]] = load(data)
+
+current_vacancy: dict[str, Any] = next(vacancies)
 current_employer: dict[str, Any] = {}
 
 
-def load_next_vacancy() -> None:
+def update_data(vacancy) -> None:
     pass
+
+
+def load_next_data() -> None:
+    vacancy = next(vacancies)
+    while current_vacancy in used_vacancies:
+        vacancy = next(vacancies)
+    update_data(vacancy)
 
 
 def get_vacancy_raw_data() -> dict[str, Any]:

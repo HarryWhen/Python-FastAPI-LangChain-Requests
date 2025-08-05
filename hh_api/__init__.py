@@ -34,12 +34,9 @@ def get_vacancies(
         case _:
             raise ValueError()
 
-    vacancies = []
     for page in range((depth + per_page - 1) // per_page):
         match get_vacancies(page=page, per_page=per_page).json():
             case {"items": items}:
-                vacancies.extend(items)
+                yield from items
             case _:
                 raise ValueError()
-
-    return vacancies
